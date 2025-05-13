@@ -1,0 +1,8 @@
+#%PAM-1.0
+# PAM configuration for freerdp-shadow-cli - TESTING WITH pam_permit.so
+# This will allow any password for the specified user.
+
+auth       required     pam_permit.so
+account    required     pam_permit.so
+password   required     pam_permit.so
+session    required     pam_permit.so
