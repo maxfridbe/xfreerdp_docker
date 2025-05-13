@@ -75,8 +75,12 @@ docker run -d --rm --name rdp-debian-arm-container \
   -e RDP_USER="your_rdp_user" \
   -e RDP_PASSWORD="YourSecurePassword123" \
   freerdp-shadow-debian-arm64:latest
+```
+
 Replace your_rdp_user and YourSecurePassword123 with your desired credentials.Replace freerdp-shadow-debian-arm64:latest with the appropriate image name if you used a different one.-d: Run in detached mode (in the background).--rm: Automatically remove the container when it exits.--name: Assign a name to the container for easier management.-p 3389:3389: Map port 3389 on the host to port 3389 in the container (standard RDP port).-e RDP_USER: Sets the username for RDP login.-e RDP_PASSWORD: Sets the password for RDP login.Connecting to the RDP SessionUse your preferred RDP client to connect to the IP address of your Docker host on port 3389.Use the RDP_USER and RDP_PASSWORD you specified when running the container.Using xfreerdp (command-line client):xfreerdp /v:<docker_host_ip> /u:your_rdp_user /p:YourSecurePassword123 /dynamic-resolution
 Replace <docker_host_ip> with the IP address of the machine running Docker. If connecting from the same machine, you can use localhost.The /dynamic-resolution flag is often helpful.You might encounter a certificate warning on the first connection, which is normal for the self-signed certificate used by default.CustomizationAdding More ApplicationsTo add more applications to your desktop environment:Open the Dockerfile for the desired version (e.g., debian_xfce_arm64/Dockerfile).Find the apt-get install section where firefox-esr and icon themes are installed.Add the package names of the applications you want to install to this list.# Example: adding gedit text editor
+
+```bash
 RUN apt-get install -y --no-install-recommends \
     firefox-esr \
     tango-icon-theme \
@@ -85,23 +89,12 @@ RUN apt-get install -y --no-install-recommends \
     # --- Add other desired GUI applications here ---
     && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+```
+
 Rebuild the Docker image using ./build.sh or docker build ....TroubleshootingExec format error on entrypoint.sh: This usually means the script has Windows-style line endings (CRLF). Convert it to Unix-style (LF) using dos2unix entrypoint.sh or a text editor.Black Screen after Connection (Older versions/Openbox): This typically means the window manager or desktop environment isn't starting correctly or isn't being captured by the RDP server. The XFCE versions should resolve this.Authentication Failures: Double-check that RDP_USER and RDP_PASSWORD environment variables are correctly passed to the docker run command.Missing Icons/Themes: Ensure packages like tango-icon-theme and gnome-icon-theme are installed in the Dockerfile. XFCE might require a logout/login or a settings adjustment to pick up new themes.ContributingContributions are welcome! Please feel free to submit pull requests or open issues for bugs, feature requests, or improvements.LicenseConsider adding a LICENSE file to your repository (e.g., MIT, Apache 2.0). For example, to use the MIT License, create a file named LICENSE with the following content:MIT License
 
-Copyright (c) [Year] [Your Name/Organization]
+# Connecting
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+```bash
+xfreerdp /v:localhost /u:myrdpuser /p:MySecurePassword123 +clipboard /workarea +home-drive
+```
