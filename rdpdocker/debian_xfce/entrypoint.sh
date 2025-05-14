@@ -4,6 +4,7 @@
 # Starts XFCE4 session.
 # Added cleanup for stale RDP server certificates and X server lock files.
 # Added signal trapping for graceful shutdown.
+# Added configurable screen resolution via environment variables.
 
 # set -x # Keep commented out unless debugging hash generation
 
@@ -12,8 +13,18 @@
 AUTH_FILE="/home/rdpuser/.config/rdp-auth-sam.txt"
 # Path for temporary hash output
 HASH_OUTPUT_FILE="/home/rdpuser/.config/hash_output.tmp"
+
 # Screen resolution for the virtual display
-SCREEN_RESOLUTION="1280x1024x24"
+# Default values
+DEFAULT_RDP_WIDTH="1280"
+DEFAULT_RDP_HEIGHT="1024"
+DEFAULT_RDP_DEPTH="24"
+# Use environment variables if set, otherwise use defaults
+RDP_WIDTH="${RDP_WIDTH:-$DEFAULT_RDP_WIDTH}"
+RDP_HEIGHT="${RDP_HEIGHT:-$DEFAULT_RDP_HEIGHT}"
+RDP_DEPTH="${RDP_DEPTH:-$DEFAULT_RDP_DEPTH}"
+SCREEN_RESOLUTION="${RDP_WIDTH}x${RDP_HEIGHT}x${RDP_DEPTH}"
+
 # Display number for Xvfb
 DISPLAY_NUM=":1" # Using :1 to avoid potential conflicts with host display :0
 # Standard empty LM hash
@@ -57,8 +68,6 @@ echo "INFO: Performing initial cleanup for robust restart..."
 pkill -f "Xvfb ${DISPLAY_NUM}" 2>/dev/null
 pkill -f "startxfce4" 2>/dev/null
 pkill -f "xfce4-session" 2>/dev/null
-# dbus-daemon can be tricky, ensure it's tied to the session later
-# pkill -f "dbus-daemon --fork" 2>/dev/null # Be cautious with this
 
 # Remove stale X server lock file and socket
 rm -f "$XVFB_LOCK_FILE"
@@ -119,9 +128,6 @@ fi
 
 # --- Server Startup ---
 echo "Starting Xvfb virtual display (${DISPLAY_NUM}) with resolution ${SCREEN_RESOLUTION}..."
-# The -nolisten tcp option is generally recommended for security if X clients are local.
-# However, freerdp-shadow-cli might need it if it acts as a remote X client to Xvfb.
-# Let's keep -listen tcp for now as it was working.
 Xvfb ${DISPLAY_NUM} -screen 0 ${SCREEN_RESOLUTION} +extension GLX -noreset -listen tcp &
 XVFB_PID=$!
 echo "INFO: Xvfb PID: $XVFB_PID"

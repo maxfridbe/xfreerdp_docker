@@ -3,6 +3,7 @@
 # Optimized with separate update and install steps for better caching.
 # Uses XFCE4 Desktop Environment.
 # Installs firefox-esr and common icon themes.
+# Added dos2unix to fix entrypoint.sh line endings.
 
 # Use Debian 12 (Bookworm) as the base image
 FROM debian:12
@@ -10,10 +11,11 @@ FROM debian:12
 # Set environment variables to prevent interactive prompts during installation
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Step 1: Initial update and install basic tools (gnupg for general good practice)
+# Step 1: Initial update and install basic tools (gnupg for general good practice, dos2unix for script conversion)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    gnupg
+    gnupg \
+    dos2unix
 
 # Step 2: Install Core RDP, X server, and base utilities
 RUN apt-get install -y --no-install-recommends \
@@ -46,11 +48,14 @@ RUN useradd -m -s /bin/bash rdpuser && \
 USER rdpuser
 WORKDIR /home/rdpuser
 
-# Copy the entrypoint script into the container and make it executable
-# Ensure the entrypoint.sh file exists in the same directory as the Dockerfile during build
-# The same entrypoint.sh script used for Ubuntu should work if winpr-hash and freerdp2-shadow-x11 commands are compatible.
+# Copy the entrypoint script into the container
+# Ensure the entrypoint.sh file (from immersive id: freerdp_entrypoint_script_sam)
+# exists in the same directory as the Dockerfile during build.
 COPY --chown=rdpuser:rdpuser entrypoint.sh /home/rdpuser/entrypoint.sh
-RUN chmod +x /home/rdpuser/entrypoint.sh
+
+# Ensure entrypoint.sh has correct Unix line endings and is executable
+RUN dos2unix /home/rdpuser/entrypoint.sh && \
+    chmod +x /home/rdpuser/entrypoint.sh
 
 # Expose the default RDP port (3389)
 EXPOSE 3389
